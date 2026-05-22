@@ -1,0 +1,27 @@
+name: Update MCL Dashboard Data
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: pip install openpyxl
+      - name: Update data
+        run: python scripts/update_data.py
+      - name: Commit and push
+        run: |
+          git config user.email "action@github.com"
+          git config user.name "GitHub Action"
+          git diff --quiet data.json && echo "No changes" && exit 0
+          git add data.json
+          git commit -m "chore: update MCL data [$(date '+%Y-%m-%d %H:%M')]"
+          git push
